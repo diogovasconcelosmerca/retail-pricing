@@ -1,0 +1,39 @@
+/// Evidence of the source price perturbation: distribution of week-on-week regular price ratios for the same
+/// product and location over 2019-2020 (17.4M pairs), computed from data/raw. Static: re-run the check to refresh.
+table 'Price Noise Evidence'
+	lineageTag: 42f948e3-ae49-4ae9-a857-94450d30dcb9
+
+	/// Share of all week-on-week price pairs that fall in each ratio bucket (static evidence of the source perturbation).
+	measure 'Share of Price Pairs' = SUM('Price Noise Evidence'[Pair Share])
+		formatString: 0.0%
+		lineageTag: 72117afc-9e37-4196-8109-bca90ab566ce
+
+	column 'Week-on-week Ratio'
+		dataType: string
+		lineageTag: 29e6520b-315a-4c06-baad-9ec8a1498a84
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Week-on-week Ratio]
+		sortByColumn: 'Sort Order'
+
+	column 'Pair Share'
+		dataType: double
+		isHidden
+		formatString: 0.0%
+		lineageTag: f8c451bd-a32b-45d2-9332-83e34ca7a3d6
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Pair Share]
+
+	column 'Sort Order'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4c3ad1e6-1265-42b7-ad95-629fcfdc71bd
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Sort Order]
+
+	partition 'Price Noise Evidence' = calculated
+		mode: import
+		source = DATATABLE("Week-on-week Ratio", STRING, "Pair Share", DOUBLE, "Sort Order", INTEGER, {{"x0.818", 0.1046, 1}, {"x0.909", 0.1046, 2}, {"x0.9", 0.1047, 3}, {"x1.000", 0.3140, 4}, {"x1.1", 0.1045, 5}, {"x1.111", 0.1046, 6}, {"x1.222", 0.1046, 7}, {"other (real changes)", 0.0584, 8}})

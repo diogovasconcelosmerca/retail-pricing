@@ -1,0 +1,31 @@
+relationship WeeklyPrices_Product
+	fromColumn: 'Weekly Prices'.'Product Key'
+	toColumn: Product.'Product Key'
+
+relationship WeeklyPrices_Shop
+	fromColumn: 'Weekly Prices'.'Shop Key'
+	toColumn: Shop.'Shop Key'
+
+relationship WeeklyPrices_Location
+	fromColumn: 'Weekly Prices'.'Location Key'
+	toColumn: Location.'Location Key'
+
+relationship WeeklyPrices_Date
+	fromColumn: 'Weekly Prices'.'Date Key'
+	toColumn: Date.'Date Key'
+
+relationship ProductNutrition_Product
+	fromColumn: 'Product Nutrition'.'Product Key'
+	toColumn: Product.'Product Key'
+
+relationship ProductNutrition_Shop
+	fromColumn: 'Product Nutrition'.'Shop Key'
+	toColumn: Shop.'Shop Key'
+
+relationship ProductNutrition_Date
+	fromColumn: 'Product Nutrition'.'Date Key'
+	toColumn: Date.'Date Key'
+
+relationship ProductNutrition_Nutrient
+	fromColumn: 'Product Nutrition'.'Nutrient Key'
+	toColumn: Nutrient.'Nutrient Key'

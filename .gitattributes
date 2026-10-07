@@ -1,0 +1,15 @@
+# Normalise line endings in Git; Windows checkouts may still use CRLF locally.
+* text=auto
+
+# Source, docs and notebooks are always stored and checked out with LF.
+*.py    text eol=lf
+*.md    text eol=lf
+*.toml  text eol=lf
+*.txt   text eol=lf
+*.ipynb text eol=lf
+*.lock  text eol=lf
+
+# Binary data never goes through text conversion.
+*.parquet binary
+*.png     binary
+*.svg     text eol=lf

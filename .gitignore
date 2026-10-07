@@ -1,0 +1,60 @@
+# Python and build artifacts
+__pycache__/
+*.py[cod]
+build/
+dist/
+wheels/
+*.egg-info/
+
+# Local environments and secrets
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Source data and generated datasets
+data/raw/
+data/clean/
+data/gold/
+data/_raw_rebuild_*/
+data/_raw_backup_*/
+data/marts/
+*.parquet
+*.duckdb
+*.duckdb.wal
+*.sqlite
+*.sqlite3
+
+# Notebook checkpoints, caches and test artifacts
+.ipynb_checkpoints/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.log
+*.tmp
+
+# Keep only portable editor formatting settings
+.vscode/*
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary analytical spill files
+.tmp/
+
+# Power BI local data and editor state; keep PBIP/TMDL definitions in Git
+*.pbix
+**/.pbi/cache.abf
+**/.pbi/localSettings.json
+**/.pbi/editorSettings.json
+

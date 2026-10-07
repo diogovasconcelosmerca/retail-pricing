@@ -1,0 +1,113 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 296.78185777147445,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 775.528998124041,
+            "y": 15.889759359250316
+          },
+          "nodeIndex": "Date",
+          "nodeLineageTag": "fb36f74d-ccce-4ef4-be38-1b68cd12e9e5",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 1
+        },
+        {
+          "location": {
+            "x": 269.522835333781,
+            "y": 357.18533515544891
+          },
+          "nodeIndex": "Location",
+          "nodeLineageTag": "1d572b45-e077-4c40-bcc8-adb21dec9409",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 1257.7473430611358,
+            "y": 432.62842068855059
+          },
+          "nodeIndex": "Nutrient",
+          "nodeLineageTag": "0e2b823b-a5c7-4c3f-b8a3-0442b29c1fa8",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 774.38308988117342,
+            "y": 918.0486268994066
+          },
+          "nodeIndex": "Product",
+          "nodeLineageTag": "3dae9020-8630-4ae9-8ae4-e3fcd2ddc85e",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 933.05833848092345,
+            "y": 358.54275445520011
+          },
+          "nodeIndex": "Product Nutrition",
+          "nodeLineageTag": "709d75fa-2fce-4b57-adb7-d9640a4cf7b2",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 614.8553195333177,
+            "y": 752.870961614078
+          },
+          "nodeIndex": "Shop",
+          "nodeLineageTag": "0e33bffa-fdae-428f-a536-052c4171843d",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 615.39091196246841,
+            "y": 360.43788960041928
+          },
+          "nodeIndex": "Weekly Prices",
+          "nodeLineageTag": "f039eb4a-8f7d-4e49-a4ca-0f860a18255a",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 8
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 31.384283767210182,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": true,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

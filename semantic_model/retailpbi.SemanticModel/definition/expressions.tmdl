@@ -1,0 +1,5 @@
+expression GoldPath = "C:\Users\diogo\Documents\retail-pricing\data\gold" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 256180ce-550b-4242-970e-7285b2e37359
+
+	annotation PBI_ResultType = Text
+

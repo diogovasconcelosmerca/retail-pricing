@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1260 320" role="img" aria-labelledby="title desc">
+<title id="title">Architecture: Raw, Silver and Gold layers feeding a Power BI semantic model</title>
+<desc id="desc">Read-only PostgreSQL extraction creates seven Raw Parquet files. Silver publishes nine datasets with contracts and lineage. Gold publishes the Belgian client mart: six dimensions, one bridge and two facts. A Power BI semantic model with DAX measures and a report reads the Gold files.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10z" fill="#9b94b2"/></marker></defs>
+<rect width="1260" height="320" rx="16" fill="#ffffff"/>
+<g font-family="Segoe UI, Arial, sans-serif">
+<text x="24" y="34" font-size="14" font-weight="700" letter-spacing="2" fill="#625b74">FROM SOURCE EVIDENCE TO ANALYTICAL CONSUMPTION</text>
+<g stroke="#9b94b2" stroke-width="2.5" fill="none" marker-end="url(#arrow)">
+<path d="M248 146H267"/><path d="M496 146H515"/><path d="M744 146H763"/><path d="M992 146H1011"/>
+</g>
+<rect x="24" y="64" width="224" height="162" rx="12" fill="#f5f4f8" stroke="#d7d2e1"/>
+<rect x="272" y="64" width="224" height="162" rx="12" fill="#eefaf7" stroke="#85d4c7"/>
+<rect x="520" y="64" width="224" height="162" rx="12" fill="#f2effa" stroke="#a597ca"/>
+<rect x="768" y="64" width="224" height="162" rx="12" fill="#fff9ed" stroke="#e3bd67"/>
+<rect x="1016" y="64" width="220" height="162" rx="12" fill="#f5f4f8" stroke="#9b94b2"/>
+<g font-size="11" font-weight="700" letter-spacing="1.3">
+<text x="42" y="93" fill="#625b74">AUTHORIZED SOURCE</text><text x="290" y="93" fill="#087f79">PRESERVED SNAPSHOT</text><text x="538" y="93" fill="#55438b">CLEANED AND VALIDATED</text><text x="786" y="93" fill="#967013">PUBLISHED MODEL</text><text x="1034" y="93" fill="#625b74">CONSUMPTION</text>
+</g>
+<g font-size="25" font-weight="650">
+<text x="42" y="133" fill="#302644">PostgreSQL</text><text x="290" y="133" fill="#087f79">Raw</text><text x="538" y="133" fill="#55438b">Silver</text><text x="786" y="133" fill="#967013">Gold</text><text x="1034" y="133" fill="#55438b" font-size="23">Semantic model</text>
+</g>
+<g font-size="15" fill="#625b74">
+<text x="42" y="166">Read-only access</text><text x="290" y="166">7 source datasets</text><text x="538" y="166">9 typed datasets</text><text x="786" y="166">6 dimensions · 1 bridge</text><text x="1034" y="166">PBIP + TMDL project</text>
+<text x="42" y="205">Explicit extraction</text><text x="290" y="205">Original values + manifest</text><text x="538" y="205">Contracts · all markets</text><text x="786" y="205">2 facts · Belgian mart</text><text x="1034" y="205">DAX measures + report</text>
+</g>
+<rect x="24" y="249" width="1212" height="44" rx="8" fill="#f5f4f8"/>
+<text x="42" y="277" font-size="15" fill="#55438b"><tspan font-weight="700">ONE EXECUTION WORKFLOW</tspan><tspan dx="22" font-family="Consolas, monospace">raw → silver → gold → parity</tspan><tspan dx="24" fill="#625b74">Parquet · DuckDB · Polars · Python</tspan></text>
+</g></svg>

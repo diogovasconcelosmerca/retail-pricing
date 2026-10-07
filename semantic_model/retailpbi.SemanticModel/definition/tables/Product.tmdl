@@ -1,0 +1,77 @@
+table Product
+	lineageTag: 3dae9020-8630-4ae9-8ae4-e3fcd2ddc85e
+
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		isKey
+		lineageTag: 703cd266-8d50-4a37-b79a-c3c4c561dd8a
+		summarizeBy: none
+		sourceColumn: product_key
+
+	column Product
+		dataType: string
+		lineageTag: d6db4f11-4301-4af4-bff0-0b4263a34b4b
+		summarizeBy: none
+		sourceColumn: name
+
+	column Brand
+		dataType: string
+		lineageTag: 44741ad0-3cd5-4fbe-a68e-e0c0915a78e4
+		summarizeBy: none
+		sourceColumn: brand
+
+	column 'Primary FMCG Category'
+		dataType: string
+		lineageTag: cae388d8-c0b6-4d74-8da1-dc7f8eadac45
+		summarizeBy: none
+		sourceColumn: primary_fmcg_category_en
+
+	column 'Classification Status'
+		dataType: string
+		lineageTag: e7dcc609-3328-47e4-a276-86e8e20da494
+		summarizeBy: none
+		sourceColumn: fmcg_classification_status
+
+	column 'Inferred Product'
+		dataType: boolean
+		lineageTag: 8261e27a-51fd-450c-9a1a-331fb3d2ca1c
+		summarizeBy: none
+		sourceColumn: is_inferred_product
+
+	hierarchy 'Product Hierarchy'
+		lineageTag: a3cda31e-2748-4de7-b41a-46b2f1fb40c4
+
+		level Brand
+			lineageTag: 4dabf42f-d720-40ef-b08e-f09fdc6eed8b
+			column: Brand
+
+		level Product
+			lineageTag: c750e311-d039-4f5d-8194-f642255470f4
+			column: Product
+
+	partition Product = m
+		mode: import
+		source =
+				let
+				    Source =
+				        Parquet.Document(
+				            File.Contents(
+				                GoldPath & "\dim_product.parquet"
+				            )
+				        ),
+				    SelectedColumns =
+				        Table.SelectColumns(
+				            Source,
+				            {
+				                "product_key",
+				                "name",
+				                "brand",
+				                "is_inferred_product",
+				                "primary_fmcg_category_en",
+				                "fmcg_classification_status"
+				            }
+				        )
+				in
+				    SelectedColumns
+

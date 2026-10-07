@@ -1,0 +1,95 @@
+table Location
+	lineageTag: 1d572b45-e077-4c40-bcc8-adb21dec9409
+
+	column 'Location Key'
+		dataType: int64
+		isHidden
+		isKey
+		lineageTag: b78b5ffa-7de2-464f-aee5-ecc7589695a2
+		summarizeBy: none
+		sourceColumn: location_key
+
+	column Location
+		dataType: string
+		lineageTag: cf454092-2b72-4737-98dc-2ccf42d4b316
+		summarizeBy: none
+		sourceColumn: location_name
+
+	column Latitude
+		dataType: double
+		lineageTag: c67b5912-c759-4e32-ae89-60ee7757973b
+		summarizeBy: none
+		sourceColumn: geolocation_latitude
+
+	column Longitude
+		dataType: double
+		lineageTag: 8c8bba05-8ef7-4213-ab38-8617537b0147
+		summarizeBy: none
+		sourceColumn: geolocation_longitude
+
+	column Locality
+		dataType: string
+		lineageTag: bf5f63c9-5cf2-407d-92e6-56b85a699a02
+		summarizeBy: none
+		sourceColumn: locality
+
+	column State
+		dataType: string
+		lineageTag: 9f9e52cb-5b8c-4dd0-b63f-1989ff881cfa
+		summarizeBy: none
+		sourceColumn: state
+
+	column 'Location Type'
+		dataType: string
+		lineageTag: 04022713-1ff4-41d0-a276-891c2ff7fd32
+		summarizeBy: none
+		sourceColumn: location_type
+
+	column Region
+		dataType: string
+		lineageTag: 02552661-2313-4bb8-a8c0-7e199d149e7f
+		summarizeBy: none
+		sourceColumn: region
+
+	hierarchy Geography
+		lineageTag: ce87e540-aee5-4a3e-9591-5b2f4cdb1450
+
+		level State
+			lineageTag: fcb57f7c-ca84-470d-a7c0-e943d8374937
+			column: State
+
+		level Locality
+			lineageTag: fe8d1a80-99da-45b9-b1a2-48b60e7a1704
+			column: Locality
+
+		level Location
+			lineageTag: dd1a6ea1-8ef3-4b37-93fa-4c117a118c45
+			column: Location
+
+	partition Location = m
+		mode: import
+		source =
+				let
+				    Source =
+				        Parquet.Document(
+				            File.Contents(
+				                GoldPath & "\dim_location.parquet"
+				            )
+				        ),
+				    SelectedColumns =
+				        Table.SelectColumns(
+				            Source,
+				            {
+				                "location_key",
+				                "location_name",
+				                "geolocation_latitude",
+				                "geolocation_longitude",
+				                "locality",
+				                "state",
+				                "location_type",
+				                "region"
+				            }
+				        )
+				in
+				    SelectedColumns
+

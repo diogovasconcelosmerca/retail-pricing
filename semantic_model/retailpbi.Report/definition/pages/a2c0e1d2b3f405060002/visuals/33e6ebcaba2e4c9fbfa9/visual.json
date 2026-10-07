@@ -1,0 +1,216 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "33e6ebcaba2e4c9fbfa9",
+  "position": {
+    "x": 952,
+    "y": 668,
+    "z": 14000,
+    "height": 392,
+    "width": 932,
+    "tabOrder": 14000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Product"
+                    }
+                  },
+                  "Property": "Product"
+                }
+              },
+              "queryRef": "Product.Product",
+              "nativeQueryRef": "Product",
+              "displayName": "Product"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Shop"
+                    }
+                  },
+                  "Property": "Shop"
+                }
+              },
+              "queryRef": "Shop.Shop",
+              "nativeQueryRef": "Shop",
+              "displayName": "Retailer"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Product"
+                    }
+                  },
+                  "Property": "Primary FMCG Category"
+                }
+              },
+              "queryRef": "Product.Primary FMCG Category",
+              "nativeQueryRef": "Primary FMCG Category",
+              "displayName": "FMCG category"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Product Nutrition"
+                    }
+                  },
+                  "Property": "Average Nutrient Value per 100g"
+                }
+              },
+              "queryRef": "Product Nutrition.Average Nutrient Value per 100g",
+              "nativeQueryRef": "Average Nutrient Value per 100g",
+              "displayName": "Per 100g"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Product Nutrition"
+                    }
+                  },
+                  "Property": "Category Average Nutrient Value per 100g"
+                }
+              },
+              "queryRef": "Product Nutrition.Category Average Nutrient Value per 100g",
+              "nativeQueryRef": "Category Average Nutrient Value per 100g",
+              "displayName": "Category average"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Product Nutrition"
+                    }
+                  },
+                  "Property": "vs Category Average % per 100g"
+                }
+              },
+              "queryRef": "Product Nutrition.vs Category Average % per 100g",
+              "nativeQueryRef": "vs Category Average % per 100g",
+              "displayName": "vs category"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Product Nutrition"
+                  }
+                },
+                "Property": "vs Category Average % per 100g"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "objects": {
+      "grid": [
+        {
+          "properties": {
+            "textSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "11D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Benchmark any product against its category'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "14D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Pick the nutrient in the header. Per 100g products only; the category average weighs each product once.'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "11D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

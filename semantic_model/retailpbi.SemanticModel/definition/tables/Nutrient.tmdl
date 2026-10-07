@@ -1,0 +1,51 @@
+table Nutrient
+	lineageTag: 0e2b823b-a5c7-4c3f-b8a3-0442b29c1fa8
+
+	column 'Nutrient Key'
+		dataType: int64
+		isHidden
+		isKey
+		lineageTag: 31fe8278-9057-4e17-9b4e-236fb0bba15a
+		summarizeBy: none
+		sourceColumn: nutrient_key
+
+	column Nutrient
+		dataType: string
+		lineageTag: 5879c21a-3ae5-4024-876e-8a4c4b47211d
+		summarizeBy: none
+		sourceColumn: nutrient_name
+
+	column 'Nutrient Label' = SWITCH([Nutrient], "fats", "Fat", "saturated_fats", "Saturated fat", "sugars", "Sugars", "salt", "Salt", "carbohydrates", "Carbohydrates", "proteins", "Protein", "fibers", "Fibre", "energy", "Energy (kJ)", "kilocalories", "Energy (kcal)", "unsaturated_fats", "Unsaturated fat", "monounsaturated_fats", "Monounsaturated fat", "polyunsaturated_fats", "Polyunsaturated fat", "polyols", "Polyols", "starch", "Starch", [Nutrient])
+		dataType: string
+		lineageTag: 2aa00d8c-c5f6-42ec-b18e-1aad8a4a7d93
+		summarizeBy: none
+		sortByColumn: 'Nutrient Order'
+
+	column 'Nutrient Order' = SWITCH([Nutrient], "fats", 1, "saturated_fats", 2, "sugars", 3, "salt", 4, "energy", 5, "kilocalories", 6, "carbohydrates", 7, "proteins", 8, "fibers", 9, 10)
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 53783470-e5e7-47c7-ad6e-938db10c8a9f
+		summarizeBy: none
+
+	partition Nutrient = m
+		mode: import
+		source =
+				let
+				    Source =
+				        Parquet.Document(
+				            File.Contents(
+				                GoldPath & "\dim_nutrient.parquet"
+				            )
+				        ),
+				    SelectedColumns =
+				        Table.SelectColumns(
+				            Source,
+				            {
+				                "nutrient_key",
+				                "nutrient_name"
+				            }
+				        )
+				in
+				    SelectedColumns
+

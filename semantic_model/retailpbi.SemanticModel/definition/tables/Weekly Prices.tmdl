@@ -1,0 +1,573 @@
+table 'Weekly Prices'
+	lineageTag: b1fe3e67-0f8c-4ec9-aebd-1a3a2e6d547b
+
+	/// Number of weekly price observations available in the current filter context.
+	measure 'Price Observations' = COUNTROWS('Weekly Prices')
+		formatString: #,0
+		displayFolder: 00 Base
+		lineageTag: 2f693c31-ddc1-4d86-8b92-f001b6010210
+
+	/// Number of distinct products with observed pricing data.
+	measure 'Observed Products' = DISTINCTCOUNT('Weekly Prices'[Product Key])
+		formatString: #,0
+		displayFolder: 00 Base
+		lineageTag: 5140c534-9735-418f-868a-7d65249b41a1
+
+	/// Number of distinct locations with observed pricing data.
+	measure 'Observed Locations' = DISTINCTCOUNT('Weekly Prices'[Location Key])
+		formatString: #,0
+		displayFolder: 00 Base
+		lineageTag: 36a0d51e-e725-4977-8b0e-3180ba4576c5
+
+	/// Number of distinct observed weeks represented in the current filter context.
+	measure 'Observed Weeks' = DISTINCTCOUNT('Weekly Prices'[Date Key])
+		formatString: #,0
+		displayFolder: 00 Base
+		lineageTag: 8c9bc18f-5237-4fa2-a30c-0640602c08ad
+
+	/// Number of weekly observations classified as promotional.
+	measure 'Promotion Observations' =
+			CALCULATE(
+			    [Price Observations],
+			    'Weekly Prices'[Promotion] = TRUE()
+			)
+		formatString: #,0
+		displayFolder: 02 Promotions
+		lineageTag: 036de75a-ee12-42f9-af65-d3b5bbbfe7ea
+
+	/// Share of observed product-location-week records classified as promotional.
+	measure 'Promotion Rate' =
+			DIVIDE(
+			    [Promotion Observations],
+			    [Price Observations]
+			)
+		formatString: 0.0%
+		displayFolder: 02 Promotions
+		lineageTag: 6e11e001-0e53-4900-8e5c-b62e311dfd20
+
+	/// Number of distinct products observed on promotion in the current filter context.
+	measure 'Products on Promotion' =
+			CALCULATE(
+			    DISTINCTCOUNT('Weekly Prices'[Product Key]),
+			    'Weekly Prices'[Promotion] = TRUE()
+			)
+		formatString: #,0
+		displayFolder: 02 Promotions
+		lineageTag: 2b22454f-5e10-4255-a4ec-90bc7cde5d06
+
+	/// Average percentage discount across promotional observations. Discount % is stored as a decimal fraction.
+	measure 'Average Promo Depth' =
+			CALCULATE(
+			    AVERAGE('Weekly Prices'[Discount %]),
+			    'Weekly Prices'[Promotion] = TRUE()
+			)
+		formatString: 0.0%
+		displayFolder: 02 Promotions
+		lineageTag: 86da136f-c5d6-4fcf-985e-caedc9ccc0c4
+
+	/// Share of observed products that were on promotion at least once in the selected period.
+	measure 'Share of Products Promoted' =
+			DIVIDE(
+			    [Products on Promotion],
+			    [Observed Products]
+			)
+		formatString: 0%
+		displayFolder: 02 Promotions
+		lineageTag: 51d48e24-8d7f-49cc-86c1-2b0b6780d4c7
+
+	/// Lowest weekly promotion rate in the selected period (the spring 2020 promotion ban shows as 0.0%).
+	measure 'Lowest Weekly Promotion Rate' =
+			MINX(
+			    FILTER(
+			        VALUES('Date'[Week Start Date]),
+			        [Price Observations] > 0
+			    ),
+			    [Promotion Rate]
+			)
+		formatString: 0.0%
+		displayFolder: 02 Promotions
+		lineageTag: b3e7a62d-efb1-4f3a-8d2c-edab1ba8eef8
+
+	/// Number of retailers represented in the current filter context.
+	measure 'Observed Shops' = DISTINCTCOUNT('Weekly Prices'[Shop Key])
+		formatString: #,0
+		displayFolder: 00 Base
+		lineageTag: 3d13bc2c-5c8f-4574-b047-41d3cd280805
+
+	/// Earliest date for which a price observation exists in the current business context.
+	measure 'Earliest Price Observation Date' =
+			VAR ObservedDateKeys =
+			    VALUES('Weekly Prices'[Date Key])
+			VAR FirstObservedDate =
+			    CALCULATE(
+			        MIN('Date'[Date]),
+			        REMOVEFILTERS('Date'),
+			        TREATAS(
+			            ObservedDateKeys,
+			            'Date'[Date Key]
+			        )
+			    )
+			RETURN
+			    FirstObservedDate
+		formatString: yyyy-MM-dd
+		displayFolder: 00 Base
+		lineageTag: a1d53f42-1660-4b51-9b53-37becce078ff
+
+	/// Products observed in the latest observed calendar month that were not observed in the preceding calendar month.
+	measure 'Newly Observed Products (Month)' =
+			VAR ObservedDateKeys =
+			    VALUES('Weekly Prices'[Date Key])
+			VAR CurrentMonth =
+			    CALCULATE(
+			        MAX('Date'[Year Month Key]),
+			        REMOVEFILTERS('Date'),
+			        TREATAS(
+			            ObservedDateKeys,
+			            'Date'[Date Key]
+			        )
+			    )
+			VAR PriorMonth =
+			    CALCULATE(
+			        MAX('Date'[Year Month Key]),
+			        REMOVEFILTERS('Date'),
+			        'Date'[Year Month Key] < CurrentMonth
+			    )
+			VAR CurrentProducts =
+			    CALCULATETABLE(
+			        VALUES('Weekly Prices'[Product Key]),
+			        REMOVEFILTERS('Date'),
+			        'Date'[Year Month Key] = CurrentMonth
+			    )
+			VAR PreviousProducts =
+			    CALCULATETABLE(
+			        VALUES('Weekly Prices'[Product Key]),
+			        REMOVEFILTERS('Date'),
+			        'Date'[Year Month Key] = PriorMonth
+			    )
+			RETURN
+			    IF(
+			        NOT ISEMPTY(PreviousProducts),
+			        COUNTROWS(EXCEPT(CurrentProducts, PreviousProducts))
+			    )
+		formatString: #,0
+		displayFolder: 04 Assortment
+		lineageTag: 61b67e7b-5e15-4a57-a922-0185af726bbd
+
+	/// Share of observed products listed in 4 weeks or fewer of the selected period (short-lived, e.g. weekly specials).
+	measure 'Share Listed 4 Weeks or Less' =
+			VAR SelectedWeeks =
+			    CALCULATE(DISTINCTCOUNT('Weekly Prices'[Date Key]), REMOVEFILTERS('Product'))
+			VAR ProductWeeks =
+			    ADDCOLUMNS(
+			        VALUES('Weekly Prices'[Product Key]),
+			        "@Weeks", CALCULATE(DISTINCTCOUNT('Weekly Prices'[Date Key]))
+			    )
+			RETURN
+			    DIVIDE(
+			        COUNTROWS(FILTER(ProductWeeks, [@Weeks] <= 4)),
+			        COUNTROWS(ProductWeeks)
+			    )
+		formatString: 0%
+		displayFolder: 04 Assortment
+		lineageTag: 65e3872f-c0d7-4053-9781-63f18936a389
+
+	/// Share of observed products listed in more than 4 weeks but fewer than half of the observed weeks.
+	measure 'Share Listed Under Half the Weeks' =
+			VAR SelectedWeeks =
+			    CALCULATE(DISTINCTCOUNT('Weekly Prices'[Date Key]), REMOVEFILTERS('Product'))
+			VAR ProductWeeks =
+			    ADDCOLUMNS(
+			        VALUES('Weekly Prices'[Product Key]),
+			        "@Weeks", CALCULATE(DISTINCTCOUNT('Weekly Prices'[Date Key]))
+			    )
+			RETURN
+			    DIVIDE(
+			        COUNTROWS(FILTER(ProductWeeks, [@Weeks] > 4 && [@Weeks] < 0.5 * SelectedWeeks)),
+			        COUNTROWS(ProductWeeks)
+			    )
+		formatString: 0%
+		displayFolder: 04 Assortment
+		lineageTag: 3b327d9f-6a84-4a16-9a4c-e18603c0d17e
+
+	/// Share of observed products listed in at least half but fewer than 90% of the observed weeks.
+	measure 'Share Listed Half to 90% of Weeks' =
+			VAR SelectedWeeks =
+			    CALCULATE(DISTINCTCOUNT('Weekly Prices'[Date Key]), REMOVEFILTERS('Product'))
+			VAR ProductWeeks =
+			    ADDCOLUMNS(
+			        VALUES('Weekly Prices'[Product Key]),
+			        "@Weeks", CALCULATE(DISTINCTCOUNT('Weekly Prices'[Date Key]))
+			    )
+			RETURN
+			    DIVIDE(
+			        COUNTROWS(FILTER(ProductWeeks, [@Weeks] >= 0.5 * SelectedWeeks && [@Weeks] < 0.9 * SelectedWeeks)),
+			        COUNTROWS(ProductWeeks)
+			    )
+		formatString: 0%
+		displayFolder: 04 Assortment
+		lineageTag: 3fa8c93d-398a-4437-b8dc-5fb8818b6b1c
+
+	/// Share of observed products listed in at least 90% of the observed weeks: the permanent core range.
+	measure 'Core Range Share' =
+			VAR SelectedWeeks =
+			    CALCULATE(DISTINCTCOUNT('Weekly Prices'[Date Key]), REMOVEFILTERS('Product'))
+			VAR ProductWeeks =
+			    ADDCOLUMNS(
+			        VALUES('Weekly Prices'[Product Key]),
+			        "@Weeks", CALCULATE(DISTINCTCOUNT('Weekly Prices'[Date Key]))
+			    )
+			RETURN
+			    DIVIDE(
+			        COUNTROWS(FILTER(ProductWeeks, [@Weeks] >= 0.9 * SelectedWeeks)),
+			        COUNTROWS(ProductWeeks)
+			    )
+		formatString: 0%
+		displayFolder: 04 Assortment
+		lineageTag: e3fb45c9-4ea0-45ae-80d9-25ce92b9a663
+
+	/// Products observed in the previous month but not in this one, as a negative number for diverging charts.
+	measure 'Products Leaving (Month)' =
+			-[No Longer Observed Products (Month)]
+		formatString: #,0;#,0;0
+		displayFolder: 04 Assortment
+		lineageTag: c67fa052-1a90-4bda-966b-e416612f658c
+
+	/// Average number of products entering the observed range per month (month vs previous month).
+	measure 'Avg Products Entering per Month' =
+			AVERAGEX(
+			    FILTER(
+			        VALUES('Date'[Year Month Key]),
+			        NOT ISBLANK([Newly Observed Products (Month)])
+			    ),
+			    [Newly Observed Products (Month)]
+			)
+		formatString: #,0
+		displayFolder: 04 Assortment
+		lineageTag: cfb2983c-ce0c-4ec0-aaab-2436479f25cd
+
+	/// Average number of products leaving the observed range per month (month vs previous month).
+	measure 'Avg Products Leaving per Month' =
+			AVERAGEX(
+			    FILTER(
+			        VALUES('Date'[Year Month Key]),
+			        NOT ISBLANK([Newly Observed Products (Month)])
+			    ),
+			    [No Longer Observed Products (Month)]
+			)
+		formatString: #,0
+		displayFolder: 04 Assortment
+		lineageTag: 304d2d0c-c477-4126-96d9-80b3caeda2d8
+
+	/// Share of a retailer's average weekly observed range that falls in the FMCG category in context.
+	measure 'Share of Weekly Range' =
+			DIVIDE(
+			    [Average Weekly Observed Products],
+			    CALCULATE(
+			        [Average Weekly Observed Products],
+			        REMOVEFILTERS('Product'[Primary FMCG Category])
+			    )
+			)
+		formatString: 0.0%
+		displayFolder: 04 Assortment
+		lineageTag: ab338425-8070-49df-b734-cca42b15f7f1
+
+	/// Products observed in the preceding calendar month that are no longer observed in the latest observed calendar month.
+	measure 'No Longer Observed Products (Month)' =
+			VAR ObservedDateKeys =
+			    VALUES('Weekly Prices'[Date Key])
+			VAR CurrentMonth =
+			    CALCULATE(
+			        MAX('Date'[Year Month Key]),
+			        REMOVEFILTERS('Date'),
+			        TREATAS(
+			            ObservedDateKeys,
+			            'Date'[Date Key]
+			        )
+			    )
+			VAR PriorMonth =
+			    CALCULATE(
+			        MAX('Date'[Year Month Key]),
+			        REMOVEFILTERS('Date'),
+			        'Date'[Year Month Key] < CurrentMonth
+			    )
+			VAR CurrentProducts =
+			    CALCULATETABLE(
+			        VALUES('Weekly Prices'[Product Key]),
+			        REMOVEFILTERS('Date'),
+			        'Date'[Year Month Key] = CurrentMonth
+			    )
+			VAR PreviousProducts =
+			    CALCULATETABLE(
+			        VALUES('Weekly Prices'[Product Key]),
+			        REMOVEFILTERS('Date'),
+			        'Date'[Year Month Key] = PriorMonth
+			    )
+			RETURN
+			    COUNTROWS(
+			        EXCEPT(
+			            PreviousProducts,
+			            CurrentProducts
+			        )
+			    )
+		formatString: #,0
+		displayFolder: 04 Assortment
+		lineageTag: 90f9c187-522c-485d-8f94-e6320b1790e3
+
+	/// Paid (effective) price change vs the same week one year earlier, pooled over the selected period: geometric mean of the like-for-like ratios stored on each weekly price row (Gold log_paid_yoy_ratio). Blank below 500 pairs, because every weekly source price carries a random +-10% perturbation that only averages out over many pairs.
+	measure 'Matched YoY Price Change % (Period)' =
+			VAR PairCount = COUNT('Weekly Prices'[Log Paid YoY Ratio])
+			RETURN
+			    IF(PairCount >= 500, EXP(AVERAGE('Weekly Prices'[Log Paid YoY Ratio])) - 1)
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 03 Price Evolution
+		lineageTag: e3e5248c-bd25-4a5e-8452-e09d8255922d
+
+	/// Shelf (regular) price change vs the same week one year earlier (Gold log_shelf_yoy_ratio), with the same 500-pair minimum as the paid price measure. Paid minus shelf isolates the effect of promotions.
+	measure 'Matched YoY Regular Price Change % (Period)' =
+			VAR PairCount = COUNT('Weekly Prices'[Log Shelf YoY Ratio])
+			RETURN
+			    IF(PairCount >= 500, EXP(AVERAGE('Weekly Prices'[Log Shelf YoY Ratio])) - 1)
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 03 Price Evolution
+		lineageTag: b5dd6ebb-f967-4ce4-b20e-09e3beba6afb
+
+	/// Percentage points of the paid-price change explained by promotions: paid minus shelf like-for-like change. Positive = fewer or shallower promotions than a year earlier.
+	measure 'Promotion Effect on Paid Price (pp)' =
+			VAR Paid = [Matched YoY Price Change % (Period)]
+			VAR Shelf = [Matched YoY Regular Price Change % (Period)]
+			RETURN
+			    IF(NOT ISBLANK(Paid) && NOT ISBLANK(Shelf), (Paid - Shelf) * 100)
+		formatString: +0.0" pp";-0.0" pp";0.0" pp"
+		displayFolder: 03 Price Evolution
+		lineageTag: a5b1e7c5-ee22-44d2-866f-bc5553cf97fb
+
+	/// Number of like-for-like pairs behind the paid price change of the selected period: weekly rows that have a log_paid_yoy_ratio.
+	measure 'Matched YoY Observations (Period)' =
+			COUNT('Weekly Prices'[Log Paid YoY Ratio])
+		formatString: #,0
+		displayFolder: 03 Price Evolution
+		lineageTag: 5c0a48e3-351c-442f-b9e8-d5ddbbe9705c
+
+	/// Share of price observations whose product carries a rule-supported FMCG category.
+	measure 'FMCG Classified Share' =
+			
+			DIVIDE(
+			    CALCULATE([Price Observations], 'Product'[Classification Status] = "classified"),
+			    [Price Observations])
+		formatString: 0%;-0%;0%
+		displayFolder: 00 Base
+		lineageTag: 79c33ce6-e016-4733-8e78-cc523c24e18c
+
+	/// Average number of distinct products observed per week in the current filter context.
+	measure 'Average Weekly Observed Products' =
+			AVERAGEX(
+			    VALUES('Date'[Week Start Date]),
+			    [Observed Products]
+			)
+		formatString: #,0
+		displayFolder: 00 Base
+		lineageTag: 7252255a-e35f-4378-8ddb-a0d84c091bf6
+
+	/// Average share of the observed weeks in which a product is listed: weekly products divided by all products seen in the period.
+	measure 'Share of Weeks Listed' =
+			DIVIDE(
+			    [Average Weekly Observed Products],
+			    [Observed Products]
+			)
+		formatString: 0%
+		displayFolder: 00 Base
+		lineageTag: f43b9bcc-63b6-4818-a325-3c24635fbf39
+
+	/// Observed products per week indexed to the first observed week of the selection (= 100), so retailers of very different size can be compared.
+	measure 'Observed Products Index' =
+			VAR BaseWeek =
+			    CALCULATE([Earliest Price Observation Date], ALLSELECTED('Date'))
+			VAR BaseProducts =
+			    CALCULATE(
+			        [Observed Products],
+			        ALLSELECTED('Date'),
+			        'Date'[Week Start Date] = BaseWeek
+			    )
+			RETURN
+			    DIVIDE([Observed Products], BaseProducts) * 100
+		formatString: 0
+		displayFolder: 00 Base
+		lineageTag: f7480344-3996-4686-9c5a-4a106263536a
+
+	/// Bar colour for the FMCG category chart: grey for unclassified and non-FMCG products.
+	measure 'Category Bar Color' =
+			IF(
+			    SELECTEDVALUE('Product'[Primary FMCG Category])
+			        IN { "Other / Unclassified", "Non-FMCG / General Merchandise" },
+			    "#B4B2A9",
+			    "#12A19B"
+			)
+		isHidden
+		displayFolder: 90 Formatting
+		lineageTag: 423de8c8-7457-4189-be3d-eadedf26410b
+
+	/// Store price vs the same retailer's national online price for the same product and week (geometric mean of the Gold log_store_vs_national_ratio on store rows, min. 500 pairs). Only Carrefour has both stores and a national price.
+	measure 'Store vs National Price Index %' =
+			VAR PairCount = COUNT('Weekly Prices'[Log Store vs National Ratio])
+			RETURN
+			    IF(PairCount >= 500, EXP(AVERAGE('Weekly Prices'[Log Store vs National Ratio])) - 1)
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 05 Regional Pricing
+		lineageTag: 41bd6aa4-5c4b-4544-b97d-965aea0fd946
+
+	/// Number of store product-weeks with a ratio against the national online price, behind the store vs national price index.
+	measure 'Store vs National Pairs' =
+			COUNT('Weekly Prices'[Log Store vs National Ratio])
+		formatString: #,0
+		displayFolder: 05 Regional Pricing
+		lineageTag: 41fb80d7-5a74-4b77-8c89-4424f9c2d8e4
+
+	/// Stores with enough pairs to be compared with their national online price.
+	measure 'Stores Compared to National Price' =
+			COUNTROWS(
+			    FILTER(
+			        CALCULATETABLE(VALUES(Location[Location Key]), Location[Location Type] = "Store"),
+			        NOT ISBLANK([Store vs National Price Index %])
+			    )
+			)
+		formatString: 0
+		displayFolder: 05 Regional Pricing
+		lineageTag: 1fc62e86-4e91-485b-bd48-f570e6c1f85b
+
+	/// Stores priced more than 1% above their national online price.
+	measure 'Stores Above National Price' =
+			COUNTROWS(
+			    FILTER(
+			        CALCULATETABLE(VALUES(Location[Location Key]), Location[Location Type] = "Store"),
+			        [Store vs National Price Index %] > 0.01
+			    )
+			)
+		formatString: 0
+		displayFolder: 05 Regional Pricing
+		lineageTag: bb25adbd-7e84-43e0-80c8-54ac54ca1801
+
+	/// Largest store premium over the national online price.
+	measure 'Highest Store Premium' =
+			MAXX(
+			    CALCULATETABLE(VALUES(Location[Location Key]), Location[Location Type] = "Store"),
+			    [Store vs National Price Index %]
+			)
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 05 Regional Pricing
+		lineageTag: 36b84feb-ba6d-4f86-bad7-f2d7b5eb94d1
+
+	/// Bar colour: teal above the national price, light teal at it.
+	measure 'Store Premium Color' =
+			IF([Store vs National Price Index %] > 0.01, "#12A19B", "#A8DCD9")
+		isHidden
+		displayFolder: 90 Formatting
+		lineageTag: 3cdc3710-2c50-44c5-9fa0-ab94b7d89033
+
+	/// Priced products with no product reference, kept as flagged "Unmatched product" members.
+	measure 'Inferred Products' =
+			CALCULATE([Observed Products], 'Product'[Inferred Product] = TRUE())
+		formatString: #,0
+		displayFolder: 06 Data Quality
+		lineageTag: 125e3f82-73f5-4142-82f9-26917f073475
+
+	/// Share of price observations that belong to inferred (unmatched) products.
+	measure 'Inferred Product Observation Share' =
+			DIVIDE(
+			    CALCULATE([Price Observations], 'Product'[Inferred Product] = TRUE()),
+			    [Price Observations]
+			)
+		formatString: 0.0%
+		displayFolder: 06 Data Quality
+		lineageTag: 443adbcf-9275-459a-b4ce-c91c18e86dca
+
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		lineageTag: 8f0e3e6b-e865-4062-a895-63d82df655b0
+		summarizeBy: none
+		sourceColumn: product_key
+
+	column 'Shop Key'
+		dataType: int64
+		isHidden
+		lineageTag: 09acc2e3-ca32-4c4a-a7b1-370a297cacf1
+		summarizeBy: none
+		sourceColumn: shop_key
+
+	column 'Location Key'
+		dataType: int64
+		isHidden
+		lineageTag: 33cc3fec-84dc-47b0-8354-25672d5171c3
+		summarizeBy: none
+		sourceColumn: location_key
+
+	column 'Date Key'
+		dataType: int64
+		isHidden
+		lineageTag: b7468906-aeef-4379-aa18-1e4195326732
+		summarizeBy: none
+		sourceColumn: date_key
+
+	column 'Discount %'
+		dataType: double
+		isHidden
+		lineageTag: daed5e38-c1f2-4344-8b74-6a69f713e40b
+		summarizeBy: none
+		sourceColumn: discount_pct
+
+	column Promotion
+		dataType: boolean
+		isHidden
+		lineageTag: e0d0fed0-06af-475f-be2a-4b8c68ad41e7
+		summarizeBy: none
+		sourceColumn: is_promotion
+
+	column 'Log Paid YoY Ratio'
+		dataType: double
+		isHidden
+		lineageTag: 4b6ef815-60a3-40da-8154-875bd990dd60
+		summarizeBy: none
+		sourceColumn: log_paid_yoy_ratio
+
+	column 'Log Shelf YoY Ratio'
+		dataType: double
+		isHidden
+		lineageTag: d43d9eb8-d8f3-4e5b-8dee-de477c9ecaf4
+		summarizeBy: none
+		sourceColumn: log_shelf_yoy_ratio
+
+	column 'Log Store vs National Ratio'
+		dataType: double
+		isHidden
+		lineageTag: 78dc65d5-a950-43e4-847b-04fda5b024dc
+		summarizeBy: none
+		sourceColumn: log_store_vs_national_ratio
+
+	partition 'Weekly Prices' = m
+		mode: import
+		source =
+				let
+				    Source =
+				        Parquet.Document(
+				            File.Contents(
+				                GoldPath & "\fact_weekly_prices.parquet"
+				            )
+				        ),
+				    SelectedColumns =
+				        Table.SelectColumns(
+				            Source,
+				            {
+				                "product_key",
+				                "shop_key",
+				                "location_key",
+				                "date_key",
+				                "discount_pct",
+				                "is_promotion",
+				                "log_paid_yoy_ratio",
+				                "log_shelf_yoy_ratio",
+				                "log_store_vs_national_ratio"
+				            }
+				        )
+				in
+				    SelectedColumns
+

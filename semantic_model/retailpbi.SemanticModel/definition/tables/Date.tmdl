@@ -1,0 +1,126 @@
+table Date
+	lineageTag: fb36f74d-ccce-4ef4-be38-1b68cd12e9e5
+	dataCategory: Time
+
+	column 'Date Key'
+		dataType: int64
+		isHidden
+		lineageTag: c1bad65d-fb56-426a-b300-94f7f9c87cb5
+		summarizeBy: none
+		sourceColumn: date_key
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: yyyy-MM-dd
+		lineageTag: 54ebba84-15a3-4966-bb3e-67a4f68dc5c3
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year
+		dataType: int64
+		lineageTag: 555ce57e-33ac-4531-ad69-2ad4c99766b2
+		summarizeBy: none
+		sourceColumn: year
+
+	column Quarter
+		dataType: string
+		lineageTag: 33f88fde-46b1-41dc-aa00-f5b241b0b197
+		summarizeBy: none
+		sourceColumn: quarter_label
+		sortByColumn: 'Year Quarter Key'
+
+	column 'Month Number'
+		dataType: int64
+		isHidden
+		lineageTag: 3f2aee5d-fcb8-49d5-97ea-faa478ca9cdb
+		summarizeBy: none
+		sourceColumn: month
+
+	column Month
+		dataType: string
+		lineageTag: 5440febc-4374-4385-ad84-1b3d9115e9d5
+		summarizeBy: none
+		sourceColumn: month_name
+		sortByColumn: 'Month Number'
+
+	column 'Year Month Key'
+		dataType: int64
+		isHidden
+		lineageTag: 1ed0f699-25f1-4900-bd70-3d662c20ad87
+		summarizeBy: none
+		sourceColumn: year_month_key
+
+	column 'Year Month'
+		dataType: string
+		lineageTag: 19c8b30a-172d-4a31-a588-958871e40bf1
+		summarizeBy: none
+		sourceColumn: year_month
+		sortByColumn: 'Year Month Key'
+
+	column 'Week Start Date'
+		dataType: dateTime
+		formatString: yyyy-MM-dd
+		lineageTag: 3ab29f48-8176-454b-adef-436c643fb79d
+		summarizeBy: none
+		sourceColumn: week_start_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Year Quarter Key'
+		dataType: int64
+		isHidden
+		lineageTag: 1056e9f0-9ed6-49f0-91f0-4b14200543a9
+		summarizeBy: none
+		sourceColumn: year_quarter_key
+
+	hierarchy Calendar
+		lineageTag: 4c1d07ff-2985-4754-9df0-0d19d12f2885
+
+		level Year
+			lineageTag: b672917e-592b-4f46-8bf5-6bead4141403
+			column: Year
+
+		level Quarter
+			lineageTag: 65acef65-59d4-421f-8f80-33d3965b684e
+			column: Quarter
+
+		level Month
+			lineageTag: 3c2aec62-f00e-43e7-90a7-df27e31df25a
+			column: Month
+
+		level Date
+			lineageTag: 721aa6f8-6769-4b91-af43-39f41cfec3de
+			column: Date
+
+	partition Date = m
+		mode: import
+		source =
+				let
+				    Source =
+				        Parquet.Document(
+				            File.Contents(
+				                GoldPath & "\dim_date.parquet"
+				            )
+				        ),
+				    SelectedColumns =
+				        Table.SelectColumns(
+				            Source,
+				            {
+				                "date_key",
+				                "date",
+				                "year",
+				                "quarter_label",
+				                "year_quarter_key",
+				                "month",
+				                "month_name",
+				                "year_month_key",
+				                "year_month",
+				                "week_start_date"
+				            }
+				        )
+				in
+				    SelectedColumns
+

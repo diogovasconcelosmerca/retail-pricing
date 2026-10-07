@@ -1,0 +1,269 @@
+table 'Product Nutrition'
+	lineageTag: 0688b118-5407-424c-8eb8-9af7baeb3549
+
+	/// Number of distinct observed products with at least one usable nutrition record.
+	measure 'Products With Usable Nutrition' =
+			CALCULATE(
+			    DISTINCTCOUNT('Product Nutrition'[Product Key]),
+			    'Product Nutrition'[Value Usable] = TRUE()
+			)
+		formatString: #,0
+		displayFolder: 00 Base
+		lineageTag: a9380230-aa24-4802-b7d6-60f0bbf8ab68
+
+	/// Average usable value of the selected nutrient for records expressed per 100 grams, taken from each product's latest observation so that every product carries equal weight.
+	measure 'Average Nutrient Value per 100g' =
+			VAR HasSingleNutrient =
+			    HASONEVALUE('Nutrient'[Nutrient Key])
+			RETURN
+			    IF(
+			        HasSingleNutrient,
+			        CALCULATE(
+			            AVERAGE('Product Nutrition'[Nutrient Value]),
+			            'Product Nutrition'[Value Usable] = TRUE(),
+			            'Product Nutrition'[Latest Observation] = TRUE(),
+			            'Product Nutrition'[Nutrition Basis] = "per_100g"
+			        )
+			    )
+		formatString: 0.00
+		displayFolder: 02 Nutrition Benchmarking
+		lineageTag: 7db3543b-cfab-4f81-8c4e-f2bf22f72c44
+
+	/// Equal-weight average of per-product nutrient values for products in the selected category, using the per-100g nutrition basis.
+	measure 'Category Average Nutrient Value per 100g' =
+			VAR CurrentCategory =
+			    SELECTEDVALUE('Product'[Primary FMCG Category])
+			VAR HasSingleCategory =
+			    NOT ISBLANK(CurrentCategory)
+			        && CurrentCategory <> "Other / Unclassified"
+			VAR CategoryProducts =
+			    CALCULATETABLE(
+			        VALUES('Product'[Product Key]),
+			        REMOVEFILTERS('Product'),
+			        'Product'[Primary FMCG Category] = CurrentCategory
+			    )
+			RETURN
+			    IF(
+			        HasSingleCategory,
+			        AVERAGEX(
+			            CategoryProducts,
+			            CALCULATE(
+			                [Average Nutrient Value per 100g]
+			            )
+			        )
+			    )
+		formatString: 0.00
+		displayFolder: 03 Category Benchmarking
+		lineageTag: 6c6d5845-fdf1-4ee9-be0a-ddea7c6a23af
+
+	/// Relative difference between the selected product's per-100g nutrient value and the selected category benchmark.
+	measure 'vs Category Average % per 100g' =
+			VAR HasSingleProduct =
+			    HASONEVALUE('Product'[Product Key])
+			VAR HasSingleCategory =
+			    NOT ISBLANK(SELECTEDVALUE('Product'[Primary FMCG Category]))
+			VAR ProductValue =
+			    [Average Nutrient Value per 100g]
+			VAR CategoryValue =
+			    [Category Average Nutrient Value per 100g]
+			RETURN
+			    IF(
+			        HasSingleProduct
+			            && HasSingleCategory
+			            && NOT ISBLANK(ProductValue)
+			            && CategoryValue <> 0,
+			        DIVIDE(
+			            ProductValue,
+			            CategoryValue
+			        ) - 1
+			    )
+		formatString: 0.0%
+		displayFolder: 03 Category Benchmarking
+		lineageTag: fe1553c1-48b4-479e-bad4-b28d60c1644c
+
+	/// Share of products "high" in the nutrient in context (UK FSA front-of-pack thresholds per 100g: fat 17.5, saturated fat 5, sugars 22.5, salt 1.5; half for drinks per 100ml), latest usable label per product.
+	measure 'Share High in Nutrient' =
+			VAR FlagRows =
+			    FILTER(
+			        ADDCOLUMNS(
+			            CALCULATETABLE(
+			                SUMMARIZE(
+			                    'Product Nutrition',
+			                    'Product Nutrition'[Product Key],
+			                    'Product Nutrition'[Nutrition Basis],
+			                    Nutrient[Nutrient]
+			                ),
+			                'Product Nutrition'[Latest Observation] = TRUE(),
+			                'Product Nutrition'[Value Usable] = TRUE(),
+			                KEEPFILTERS(Nutrient[Nutrient] IN {"fats", "saturated_fats", "sugars", "salt"}),
+			                REMOVEFILTERS('Date')
+			            ),
+			            "@Value",
+			                CALCULATE(
+			                    MAX('Product Nutrition'[Nutrient Value]),
+			                    'Product Nutrition'[Latest Observation] = TRUE(),
+			                    'Product Nutrition'[Value Usable] = TRUE(),
+			                    REMOVEFILTERS('Date')
+			                ),
+			            "@Threshold",
+			                SWITCH(
+			                    Nutrient[Nutrient],
+			                    "fats", 17.5,
+			                    "saturated_fats", 5,
+			                    "sugars", 22.5,
+			                    "salt", 1.5
+			                ) * IF('Product Nutrition'[Nutrition Basis] = "per_100ml", 0.5, 1)
+			        ),
+			        NOT ISBLANK([@Value])
+			    )
+			RETURN
+			    DIVIDE(
+			        COUNTROWS(FILTER(FlagRows, [@Value] > [@Threshold])),
+			        COUNTROWS(FlagRows)
+			    )
+		formatString: 0%
+		displayFolder: 04 Nutrient Flags
+		lineageTag: 8fcca366-e63a-451d-ab2d-6b7395fc897e
+
+	/// Share of products high in at least one of fat, saturated fat, sugars or salt.
+	measure 'Share High in Any Nutrient' =
+			VAR FlagRows =
+			    FILTER(
+			        ADDCOLUMNS(
+			            CALCULATETABLE(
+			                SUMMARIZE(
+			                    'Product Nutrition',
+			                    'Product Nutrition'[Product Key],
+			                    'Product Nutrition'[Nutrition Basis],
+			                    Nutrient[Nutrient]
+			                ),
+			                'Product Nutrition'[Latest Observation] = TRUE(),
+			                'Product Nutrition'[Value Usable] = TRUE(),
+			                KEEPFILTERS(Nutrient[Nutrient] IN {"fats", "saturated_fats", "sugars", "salt"}),
+			                REMOVEFILTERS('Date')
+			            ),
+			            "@Value",
+			                CALCULATE(
+			                    MAX('Product Nutrition'[Nutrient Value]),
+			                    'Product Nutrition'[Latest Observation] = TRUE(),
+			                    'Product Nutrition'[Value Usable] = TRUE(),
+			                    REMOVEFILTERS('Date')
+			                ),
+			            "@Threshold",
+			                SWITCH(
+			                    Nutrient[Nutrient],
+			                    "fats", 17.5,
+			                    "saturated_fats", 5,
+			                    "sugars", 22.5,
+			                    "salt", 1.5
+			                ) * IF('Product Nutrition'[Nutrition Basis] = "per_100ml", 0.5, 1)
+			        ),
+			        NOT ISBLANK([@Value])
+			    )
+			VAR AllProducts =
+			    DISTINCT(SELECTCOLUMNS(FlagRows, "@Product", 'Product Nutrition'[Product Key]))
+			VAR HighProducts =
+			    DISTINCT(SELECTCOLUMNS(FILTER(FlagRows, [@Value] > [@Threshold]), "@Product", 'Product Nutrition'[Product Key]))
+			RETURN
+			    DIVIDE(COUNTROWS(HighProducts), COUNTROWS(AllProducts))
+		formatString: 0%
+		displayFolder: 04 Nutrient Flags
+		lineageTag: b6c87d66-cf30-48d1-ab16-e1d16966ef19
+
+	/// Share of products high in sugars.
+	measure 'Share High in Sugar' =
+			CALCULATE([Share High in Nutrient], REMOVEFILTERS(Nutrient), Nutrient[Nutrient] = "sugars")
+		formatString: 0%
+		displayFolder: 04 Nutrient Flags
+		lineageTag: 6dc000ce-b878-4068-98ff-51be9f322bbf
+
+	/// Share of products high in saturated fat.
+	measure 'Share High in Saturated Fat' =
+			CALCULATE([Share High in Nutrient], REMOVEFILTERS(Nutrient), Nutrient[Nutrient] = "saturated_fats")
+		formatString: 0%
+		displayFolder: 04 Nutrient Flags
+		lineageTag: 71934302-1013-4845-805c-93ff6120919d
+
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		lineageTag: 4464e09e-0a63-41bc-aa20-5719ca92f722
+		summarizeBy: none
+		sourceColumn: product_key
+
+	column 'Shop Key'
+		dataType: int64
+		isHidden
+		lineageTag: 48531902-799d-4c8e-b549-7875aa18a867
+		summarizeBy: none
+		sourceColumn: shop_key
+
+	column 'Date Key'
+		dataType: int64
+		isHidden
+		lineageTag: 55cd8453-3984-40c5-96de-f01fd657ff59
+		summarizeBy: none
+		sourceColumn: date_key
+
+	column 'Nutrient Key'
+		dataType: int64
+		isHidden
+		lineageTag: 0bd889ae-2d6e-433d-85d4-6929f367a7a2
+		summarizeBy: none
+		sourceColumn: nutrient_key
+
+	column 'Nutrition Basis'
+		dataType: string
+		isHidden
+		lineageTag: f371fc4f-1e12-4c89-97ac-ba0832aff649
+		summarizeBy: none
+		sourceColumn: nutrition_basis
+
+	column 'Nutrient Value'
+		dataType: double
+		isHidden
+		lineageTag: f94dcda7-a474-4192-856a-f86c05033931
+		summarizeBy: none
+		sourceColumn: nutrient_value
+
+	column 'Value Usable'
+		dataType: boolean
+		isHidden
+		lineageTag: 6a770f01-35c4-4f13-ae1b-ec1f09cbd8c2
+		summarizeBy: none
+		sourceColumn: is_value_usable
+
+	column 'Latest Observation'
+		dataType: boolean
+		isHidden
+		lineageTag: 3f7c1a52-6d1e-4c0a-9a53-0b2d7e5c8a11
+		summarizeBy: none
+		sourceColumn: is_latest_observation
+
+	partition 'Product Nutrition' = m
+		mode: import
+		source =
+				let
+				    Source =
+				        Parquet.Document(
+				            File.Contents(
+				                GoldPath & "\fact_product_nutrition.parquet"
+				            )
+				        ),
+				    SelectedColumns =
+				        Table.SelectColumns(
+				            Source,
+				            {
+				                "product_key",
+				                "shop_key",
+				                "date_key",
+				                "nutrient_key",
+				                "nutrition_basis",
+				                "nutrient_value",
+				                "is_value_usable",
+				                "is_latest_observation"
+				            }
+				        )
+				in
+				    SelectedColumns
+

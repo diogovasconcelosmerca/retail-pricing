@@ -1,0 +1,38 @@
+table Shop
+	lineageTag: 0e33bffa-fdae-428f-a536-052c4171843d
+
+	column 'Shop Key'
+		dataType: int64
+		isHidden
+		isKey
+		lineageTag: 5bfb1fec-79f6-4057-8dc4-522e6f616343
+		summarizeBy: none
+		sourceColumn: shop_key
+
+	column Shop
+		dataType: string
+		lineageTag: f4f7615f-9317-43e5-a479-86e6295b9c96
+		summarizeBy: none
+		sourceColumn: shop_name
+
+	partition Shop = m
+		mode: import
+		source =
+				let
+				    Source =
+				        Parquet.Document(
+				            File.Contents(
+				                GoldPath & "\dim_shop.parquet"
+				            )
+				        ),
+				    SelectedColumns =
+				        Table.SelectColumns(
+				            Source,
+				            {
+				                "shop_key",
+				                "shop_name"
+				            }
+				        )
+				in
+				    SelectedColumns
+

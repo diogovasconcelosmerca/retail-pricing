@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "retailpbi"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "3fccf922-e690-467e-9070-8c3cf975b6c7"
+  }
+}

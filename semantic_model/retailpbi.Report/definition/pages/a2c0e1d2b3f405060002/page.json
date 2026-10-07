@@ -1,0 +1,109 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "a2c0e1d2b3f405060002",
+  "displayName": "Nutrition Benchmark",
+  "displayOption": "FitToPage",
+  "height": 1080,
+  "width": 1920,
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "pricedRetailersOnly",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Shop"
+              }
+            },
+            "Property": "Shop"
+          }
+        },
+        "type": "Categorical",
+        "filter": {
+          "Version": 2,
+          "From": [
+            {
+              "Name": "f",
+              "Entity": "Shop",
+              "Type": 0
+            }
+          ],
+          "Where": [
+            {
+              "Condition": {
+                "Not": {
+                  "Expression": {
+                    "In": {
+                      "Expressions": [
+                        {
+                          "Column": {
+                            "Expression": {
+                              "SourceRef": {
+                                "Source": "f"
+                              }
+                            },
+                            "Property": "Shop"
+                          }
+                        }
+                      ],
+                      "Values": [
+                        [
+                          {
+                            "Literal": {
+                              "Value": "'Albert Heijn'"
+                            }
+                          }
+                        ],
+                        [
+                          {
+                            "Literal": {
+                              "Value": "'Collect&Go'"
+                            }
+                          }
+                        ]
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "howCreated": "User"
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "eccb1a22284e4df8bd31",
+      "target": "0467d1ac577f4bd7bde5",
+      "type": "NoFilter"
+    },
+    {
+      "source": "eccb1a22284e4df8bd31",
+      "target": "b6ba56c79e2e4e158904",
+      "type": "NoFilter"
+    },
+    {
+      "source": "eccb1a22284e4df8bd31",
+      "target": "c913423c277c4e82bb35",
+      "type": "NoFilter"
+    },
+    {
+      "source": "eccb1a22284e4df8bd31",
+      "target": "6f85cb2fa6ab418e934f",
+      "type": "NoFilter"
+    },
+    {
+      "source": "eccb1a22284e4df8bd31",
+      "target": "b34abe428665430cbe50",
+      "type": "NoFilter"
+    },
+    {
+      "source": "eccb1a22284e4df8bd31",
+      "target": "07df4d66b57347678c95",
+      "type": "NoFilter"
+    }
+  ]
+}
